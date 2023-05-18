@@ -1,5 +1,4 @@
 import pandas
-import pandas as pd
 import os
 import pickle
 from datetime import datetime, date
