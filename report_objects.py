@@ -396,7 +396,7 @@ class MaterialForcast:
         df2 = df2.loc[(df2.notnull()) & (df2 != 0)]
         df2 = df2.to_frame().join(df1)
         df2['Needed From Overstock'] = df2['Quantity'] - df2['Firm Qty']
-        df2['Needed From Overstock'].loc[df2['Quantity'].isnull()] = 0 - df2['Firm Qty']
+        df2.loc[df2['Quantity'].isnull(), 'Needed From Overstock'] = 0 - df2['Firm Qty']
         df2 = df2.loc[(df2['Needed From Overstock'] < 0) | (df2['Needed From Overstock'].isnull())]
         df2.loc[df2['Needed From Overstock'] < 0, 'Needed From Overstock'] *= -1
         rep_items = df2.index.values.tolist()
@@ -455,8 +455,8 @@ class MaterialForcast:
         s1 = self.get_deficit()
         pending_dict = s1.to_dict()
         df1 = self.pending_po.df.copy()
-        df1['Item: Name'] = df1['Item: Name'].str.split('(', n=1)
-        df1['Item: Name'] = df1['Item: Name'].str[0].str[:-1]
+        # df1['Item: Name'] = df1['Item: Name'].str.split('(', n=1)
+        # df1['Item: Name'] = df1['Item: Name'].str[0].str[:-1]
         df1 = df1.loc[df1['Item: Name'].isin(s1.index) == True]
         df1 = df1.sort_values(by=['Dock Date'], ascending=False)
         new_dict = {k: {'Quantity Needed': v,
@@ -481,7 +481,7 @@ class POShipping:
         self.po_pending = PendingPOLine(top=False)
         self.po_received = ReceivedPOLine(top=False)
         self.ship_report = Shipments(top=False)
-        if po_pending is not None and po_received is not None and ship_report is not None:
+        if self.po_pending is not None and self.po_received is not None and self.ship_report is not None:
             self.df = self._initialize_df()
 
         file_detection_global.read_dfo_list()

@@ -1,4 +1,6 @@
-import pandas
+import copy
+import re
+import pandas as pd
 import os
 import pickle
 from datetime import datetime, date
@@ -66,7 +68,7 @@ class INVLocationsFile(DataFile):
         super().__init__(df)
 
     file_description = 'Items in inventory and their locations (Selected divisions, All time)'
-    file_link = 'https://nexius.my.salesforce.com/00O2J000006yT5G'
+    file_link = 'not provided'
 
 
 # endregion
@@ -93,7 +95,7 @@ class INVChangesFile(TransactionsFile):
         super().__init__(df)
 
     file_description = 'All transactions that change total inventory quantity (Selected divisions, Selected Dates)'
-    file_link = 'https://nexius.my.salesforce.com/00O2J000006qk7t'
+    file_link = 'not provided'
 
 
 class DIVTransactionsFile(TransactionsFile):
@@ -101,7 +103,7 @@ class DIVTransactionsFile(TransactionsFile):
         super().__init__(df)
 
     file_description = 'Division to division transfer transactions (All divisions, Selected dates)'
-    file_link = 'https://nexius.my.salesforce.com/00O2J000006ySML'
+    file_link = 'not provided'
 
 
 class LOCTransactionFile(TransactionsFile):
@@ -109,7 +111,7 @@ class LOCTransactionFile(TransactionsFile):
         super().__init__(df)
 
     file_description = 'Location to location transfer transactions (Selected divisions, Selected dates)'
-    file_link = 'https://nexius.my.salesforce.com/00O2J000006qiOx'
+    file_link = 'not provided'
 
 # endregion
 
@@ -134,7 +136,7 @@ class PendingPoLineFile(PoLineFile):
         super().__init__(df)
 
     file_description = 'PO Lines not fully received (All divisions, All time (Excludes 3PL))'
-    file_link = 'https://nexius.my.salesforce.com/00O2J000006qjnA/e?retURL=%2F00O%2Fo'
+    file_link = 'not provided'
 
 
 class ReceivedPoLineFile(PoLineFile):
@@ -142,7 +144,7 @@ class ReceivedPoLineFile(PoLineFile):
         super().__init__(df)
 
     file_description = 'PO Lines fully received (All divisions, Selected Dates ( Excludes 3PL))'
-    file_link = 'https://nexius.my.salesforce.com/00O2J000006qkfq'
+    file_link = 'not provided'
 
 
 # endregion
@@ -156,7 +158,7 @@ class TransfersFileSS(DataFile):
         super().__init__(df)
 
     file_description = 'All Smartsheet transfer lines (All divisions, All time)'
-    file_link = 'https://app.smartsheet.com/sheets/Jg9XQrXrQVJ48wWF5M5PcjQcxx6MVRMpmrx2F4C1?view=grid'
+    file_link = 'not provided'
 
 
 # endregion
@@ -168,7 +170,7 @@ class MaterialStatusFile(DataFile):
         super().__init__(df)
 
     file_description = 'All Material for selected Job numbers'
-    file_link = 'https://allios.accuv.com/apps/dashboards/NEXIUS/report/4'
+    file_link = 'not provided'
 
 
 # endregion
@@ -180,7 +182,7 @@ class ShipmentsFile(DataFile):
         super().__init__(df)
 
     file_description = 'Shipments documented on eShipping website'
-    file_link = 'https://mytms.eshipmanager.com/tms/analyze'
+    file_link = 'not provided'
 
 
 # endregion
@@ -225,6 +227,7 @@ def get_df(path):
 
 
 def create_data_file_object_1(path):
+    # Verifies that the selected file is data file
     if os.path.isfile(path):
         if path.endswith('csv'):
             for key, value in get_data_file_types().items():
@@ -235,6 +238,7 @@ def create_data_file_object_1(path):
     else:
         return False
 
+    # Determines what type of data file object the selected file is
     df = get_df(path)
     if df is not False:
         data_file_object = DataFile(df)
@@ -307,6 +311,7 @@ def find_data_files(data_file_object=DataFile, directory=os.getcwd(), pickled=Tr
         else:
             data_file = create_data_file_object_1(directory + '/' + x)
             if isinstance(data_file, data_file_object):
+
                 if current_date is True:
                     if data_file.validate() is True:
                         data_files.append(data_file)
@@ -325,6 +330,7 @@ def validate_pickled_data_files(remove=True):
     pickle.dump(data_files, open('datafiles.pl', 'wb'))
 
 
+# Manually define the values of a data file
 def define_data_file_object(path, data_file_type):
     try:
         dft = get_data_file_types()
@@ -346,12 +352,26 @@ def define_data_file_object(path, data_file_type):
 def get_column_values(path):
     try:
         a = open(path, 'r').readline()
-        a = a.split(',')
-        a = [x.strip("'\n'") for x in a]
-        a = [x.strip('"') for x in a]
-        return a
+        b = re.findall(r'"(.*?)"', a)
+
+        if len(b) > 0:
+            for x in b:
+                c = re.sub(r'"' + re.escape(x) + r'"', "", a)
+                c = re.sub(r',,', ',', c)
+        else:
+            c = copy.copy(a)
+
+        c = c.split(',')
+        c = [x.strip("'\n'") for x in c]
+        c = [x.strip('"') for x in c]
+
+        if len(b) > 0:
+            c.extend(b)
+
+        return c
     except UnicodeDecodeError:
-        return pandas.read_excel(path).columns.values
+        return pd.read_excel(path).columns.values
+
 
 # endregion
 
