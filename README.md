@@ -6,9 +6,9 @@ expected to do.
 
 ## Design
 
-No-More-Reports is built with pandas and returns data frames
+Its built with pandas and returns data frames
 so that more precise results can be acquired if needed. I designed 
-No-More-Reports to be very simple to use, the user only needs to initialize a report object to receive a 
+this app to be very simple to use, the user only needs to initialize a report object to receive a 
 data frame, there are no other steps required as long as the 
 required files are somewhere inside the main directory. The required files are
 automatically gathered when the data_file_objects module is loaded.
@@ -16,7 +16,7 @@ automatically gathered when the data_file_objects module is loaded.
 
 ## Top level structure and how that relates to scaling
 
-We have two classes: data file classes and report classes. data file 
+There are two important class types: data file classes and report classes. data file 
 classes give an identity to a downloaded file and report classes
 use that identity to locate their required files. 
 
@@ -44,12 +44,12 @@ somthing the user may want.
 
 ### Scaling
 
-This purpose behind data file objects and report objects is to scale this application
+The purpose behind data file objects and report objects is to scale this application
 with new reports that I believed that I would one day have to do. Any time I would need further
 analysis, I could do the work then copy and paste the code I used into the report object as a
 method I could use another time if I needed to. If I want to create a new report and that 
 report requires the results of a few other reports, I can very simply just composite those needed
-reports into my report.
+reports into my report class.
 
 ## Important note
 
@@ -67,7 +67,8 @@ some of that data that I left out may be used for something I have forgotten abo
 2. Open Python console
 3. Import report_objects
 4. Initialize a report object
-   - **Example:** `ro = MaterialForcast()`
-     - Each report object contains at least one data frame
-     - All report objects are located in report_objects.py
-     - Data frames inside report objects always start with df
+- **Example:** `ro = MaterialForcast()`
+- Each report object contains at least one data frame
+- **Example:** ro.df
+- **Note:** not all data frames are assigned to the df namespace, as they contain multiple data frames.
+- Reference report_objects.py to use report classes and their methods.
